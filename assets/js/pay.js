@@ -6,16 +6,16 @@ const CONFIG = {
     lnbitsNode: "https://lnbits.whitepaperinteractive.com",
     paywallId: "fGAHUMU6qAPaBZTkNHGFvx",
     paywallPrefix: "/paywall",
-    // 21 sats = 10% hashpower 
-    // 50 sats = 25% hashpower
-    // 100 sats = 50% hashpower
-    // 150 sats = 75% hashpower
-    // 210 sats = 100% hashpower
+    // 21 sats = 1% chance of leading zero
+    // 50 sats = 5% chance of leading zero
+    // 100 sats = 15% chance of leading zero
+    // 150 sats = 35% chance of leading zero
+    // 210 sats = 100% chance of leading zero
     PRICING_TIERS: [
-        { level: 1, power: 10, sats: 21 },
-        { level: 2, power: 25, sats: 50 },
-        { level: 3, power: 50, sats: 100 },
-        { level: 4, power: 75, sats: 150 },
+        { level: 1, power: 1, sats: 21 },
+        { level: 2, power: 5, sats: 50 },
+        { level: 3, power: 15, sats: 100 },
+        { level: 4, power: 35, sats: 150 },
         { level: 5, power: 100, sats: 210 }
     ]
 };
@@ -98,6 +98,7 @@ function getNostrLogin() {
 
 function clearNostrLogin() {
     localStorage.removeItem("nostr_pubkey");
+    localStorage.removeItem("nostr_privkey");
 }
 
 function saveNWCUrl(url) {
@@ -591,8 +592,15 @@ function wire() {
 
             // Ensure we have a hex string for the relay query
             const pubkeyHex = typeof pubkeyBytes === 'string' ? pubkeyBytes : bytesToHex(pubkeyBytes);
+            const status = typeof pubkeyBytes === 'string' ? "hex" : "bytes"; // debugging
 
             loadNostrProfile(pubkeyHex);
+
+            // Save private key for signing
+            // We need to convert bytes to hex if it's not already
+            const privKeyHex = bytesToHex(privateKeyBytes);
+            localStorage.setItem("nostr_privkey", privKeyHex);
+
         } catch (err) {
             alert("Invalid NSEC key: " + err.message);
         }
@@ -683,6 +691,17 @@ function wire() {
 
     // Create invoice on load if not already paid
     if (!hasAccess()) createInvoice();
+}
+
+// --------------------
+// DETECT RELOAD AND CLEAR SESSION
+// --------------------
+// Clear session on page reload (F5 or Ctrl+F5)
+// This ensures users return to the payment screen after refresh
+const navEntry = performance.getEntriesByType('navigation')[0];
+if (navEntry && navEntry.type === 'reload') {
+    console.log('Page reload detected - clearing session');
+    sessionStorage.clear();
 }
 
 // --------------------

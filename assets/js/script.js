@@ -885,7 +885,7 @@ let stats = {
   gamesPlayedAllTime: parseInt(localStorage.getItem("games")) || 0,
   gameTimeInSeconds: 0,
   gameTimeAllTime: parseInt(localStorage.getItem("time")) || 0,
-  highScore: parseInt(localStorage.getItem("highScore")) || 0,
+  highScore: "Loading...",
   pointsAllTime: parseInt(localStorage.getItem("points")) || 0,
   updateGamesPlayed() {
     this.gamesPlayedThisSession++;
@@ -912,6 +912,7 @@ let stats = {
     this.pointsAllTime = 0;
   },
 };
+window.stats = stats;
 
 // EVENT LISTENERS
 

@@ -21,7 +21,13 @@ const GAMESTR = {
         if (btnPlayAgain) btnPlayAgain.onclick = () => this.playAgain();
 
         const btnMainMenu = document.getElementById("btnLeaderboardMenu");
-        if (btnMainMenu) btnMainMenu.onclick = () => this.playAgain(); // Same functionality
+        if (btnMainMenu) btnMainMenu.onclick = () => {
+            document.getElementById("leaderboard-overlay").classList.add("hidden");
+            document.getElementById("game-over-popup").classList.remove("hidden");
+        };
+
+        const btnLeaderboard = document.getElementById("btnLeaderboard");
+        if (btnLeaderboard) btnLeaderboard.onclick = () => this.showLeaderboard();
 
         // Share Modal Wiring
         const btnShareNostr = document.getElementById("btnShareNostr");
@@ -29,6 +35,61 @@ const GAMESTR = {
 
         const btnCancelShare = document.getElementById("btnCancelShare");
         if (btnCancelShare) btnCancelShare.onclick = () => this.closeShareModal();
+
+        // Fetch global high score on init
+        this.fetchGlobalHighScore();
+    },
+
+    fetchGlobalHighScore() {
+        console.log("Fetching global high score...");
+        const socket = new WebSocket("wss://relay.damus.io"); // Using primary relay
+        let highest = 0;
+
+        socket.onopen = () => {
+            const req = {
+                kinds: [30762],
+                authors: [this.devPubkey],
+                // Removed restrictive #d filter - client-side filtering handles this
+                limit: 100 // Fetch enough to find the max
+            };
+            socket.send(JSON.stringify(["REQ", "satsnake-hs", req]));
+        };
+
+        socket.onmessage = (msg) => {
+            const data = JSON.parse(msg.data);
+            if (data[0] === "EVENT") {
+                const event = data[2];
+                // Client-side filtering as requested: Game: satsnake, T: test
+                const gameTag = event.tags.find(t => t[0] === "game");
+                const gameMatch = gameTag && gameTag[1].toLowerCase() === "satsnake";
+
+                // Filter for t="test" tag as specified in requirements
+                const hasTestTag = event.tags.some(t => t[0] === "t" && t[1] === "test");
+
+                if (gameMatch && hasTestTag) {
+                    const scoreTag = event.tags.find(t => t[0] === "score");
+                    if (scoreTag) {
+                        const score = parseInt(scoreTag[1]);
+                        if (!isNaN(score) && score > highest) {
+                            highest = score;
+                        }
+                    }
+                }
+            } else if (data[0] === "EOSE") {
+                socket.close();
+                console.log("Global high score fetched:", highest);
+
+                // Update Global Stats
+                if (window.stats) {
+                    // Use Gamestr high score if available, otherwise fall back to local
+                    const localHighScore = parseInt(localStorage.getItem("highScore")) || 0;
+                    window.stats.highScore = highest > 0 ? highest : localHighScore;
+                    console.log("Global high score set to:", window.stats.highScore);
+                    // We do NOT save this to localStorage as it's the global high score, 
+                    // effectively overriding the local PB for display purposes.
+                }
+            }
+        };
     },
 
     handleGameOver(score) {
@@ -157,8 +218,34 @@ const GAMESTR = {
         btn.disabled = true;
 
         try {
-            // Use extension if available (preferred)
-            if (window.nostr) {
+            const privKeyHex = localStorage.getItem("nostr_privkey");
+
+            if (privKeyHex) {
+                // Local signing with saved nsec
+                const { finalizeEvent } = await import("https://esm.sh/nostr-tools@2.7.0/pure");
+                const { hexToBytes } = await import("https://esm.sh/@noble/hashes@1.3.3/utils");
+
+                const unsignedEvent = {
+                    kind: 1,
+                    created_at: Math.floor(Date.now() / 1000),
+                    tags: [
+                        ["t", "SatSnake"],
+                        ["t", "Gamestr"]
+                    ],
+                    content: text,
+                };
+
+                const privKeyBytes = hexToBytes(privKeyHex);
+                const signedEvent = finalizeEvent(unsignedEvent, privKeyBytes);
+
+                console.log("Locally signed event:", signedEvent);
+                await this.publishEvent(signedEvent);
+                console.log("Event published successfully");
+                alert("Score shared to Nostr successfully!");
+                this.closeShareModal();
+
+            } else if (window.nostr) {
+                // Use extension if available (preferred if no local key)
                 const unsignedEvent = {
                     kind: 1,
                     created_at: Math.floor(Date.now() / 1000),
@@ -184,7 +271,7 @@ const GAMESTR = {
                 alert("Score shared to Nostr successfully!");
                 this.closeShareModal();
             } else {
-                throw new Error("NIP-07 extension not found (window.nostr)");
+                throw new Error("No signing method available (extension or nsec)");
             }
 
         } catch (err) {
@@ -320,16 +407,16 @@ const GAMESTR = {
 
     fetchLeaderboardMessages() {
         const list = document.getElementById("leaderboard-list");
-        list.innerHTML = "<li>Loading...</li>";
+        list.innerHTML = "<li>Loading scores...</li>";
 
         const socket = new WebSocket("wss://relay.damus.io");
-        const events = [];
+        const scores = [];
 
         socket.onopen = () => {
             const req = {
                 kinds: [30762],
                 authors: [this.devPubkey],
-                "#d": ["satsnake"], // Optimization if worker uses d-tag
+                // Removed restrictive #d filter - client-side filtering handles this
                 limit: 50
             };
             socket.send(JSON.stringify(["REQ", "satsnake-lb", req]));
@@ -338,57 +425,144 @@ const GAMESTR = {
         socket.onmessage = (msg) => {
             const data = JSON.parse(msg.data);
             if (data[0] === "EVENT") {
-                events.push(data[2]);
+                scores.push(data[2]);
             } else if (data[0] === "EOSE") {
                 socket.close();
-                this.renderLeaderboard(events);
+                this.enrichAndRenderLeaderboard(scores);
             }
         };
     },
 
-    renderLeaderboard(events) {
-        const list = document.getElementById("leaderboard-list");
-        list.innerHTML = "";
-
-        // Filter for game="SatSnake" just in case
-        // Parse content? The prompt says event content is "Player scored X..."
-        // But the tags have the real data: ["score", score], ["game", "satsnake"]
-
-        const scores = events
+    async enrichAndRenderLeaderboard(events) {
+        // 1. Filter and Extract Data
+        const parsedScores = events
             .filter(e => {
                 const gameTag = e.tags.find(t => t[0] === "game");
                 return gameTag && gameTag[1].toLowerCase() === "satsnake";
             })
             .map(e => {
                 const scoreTag = e.tags.find(t => t[0] === "score");
-                const pTag = e.tags.find(t => t[0] === "p"); // Player pubkey
-                // We might need to parse name from content or aux tags? 
-                // Worker content: `${playerName} scored...`
-                // We can just use the content or try to parse. 
-                // Let's use content for simplicity as it contains the name.
+                // Check if player tag exists, otherwise use pubkey from event (which might be the worker's?)
+                // Actually, the worker signs it, but checks for 'p' tag for original player if valid?
+                // The prompt says "playerPubkey" is passed to worker. 
+                // Let's assume the worker adds a "p" tag for the player, OR we use the content if provided.
+                // Standard Gamestr: event.pubkey is the signer (Worker). Player is in 'p' tag or tags.
+
+                // Let's look for 'p' tag.
+                const pTag = e.tags.find(t => t[0] === "p");
+                const playerPubkey = pTag ? pTag[1] : null;
 
                 return {
                     id: e.id,
                     content: e.content,
                     score: scoreTag ? parseInt(scoreTag[1]) : 0,
-                    created_at: e.created_at
+                    playerPubkey: playerPubkey
                 };
             })
-            .sort((a, b) => b.score - a.score); // Descending
+            .sort((a, b) => b.score - a.score);
+
+        // 2. Collect Pubkeys for Profile Fetch
+        const pubkeys = [...new Set(parsedScores.map(s => s.playerPubkey).filter(p => p))];
+
+        // 3. Fetch Profiles (Kind 0)
+        const profiles = {};
+        if (pubkeys.length > 0) {
+            try {
+                const profileEvents = await this.fetchKind0(pubkeys);
+                profileEvents.forEach(evt => {
+                    try {
+                        const content = JSON.parse(evt.content);
+                        profiles[evt.pubkey] = {
+                            name: content.name || content.display_name || content.nip05 || "Unknown",
+                            picture: content.picture || "assets/logo.png"
+                        };
+                    } catch (e) {
+                        console.error("Error parsing profile:", e);
+                    }
+                });
+            } catch (err) {
+                console.error("Failed to fetch profiles:", err);
+            }
+        }
+
+        // 4. Render
+        this.renderLeaderboard(parsedScores, profiles);
+    },
+
+    fetchKind0(pubkeys) {
+        return new Promise((resolve) => {
+            const socket = new WebSocket("wss://relay.damus.io");
+            const events = [];
+
+            // Timeout safety
+            const timeout = setTimeout(() => {
+                socket.close();
+                resolve(events);
+            }, 3000);
+
+            socket.onopen = () => {
+                const req = {
+                    kinds: [0],
+                    authors: pubkeys
+                };
+                socket.send(JSON.stringify(["REQ", "profiles", req]));
+            };
+
+            socket.onmessage = (msg) => {
+                const data = JSON.parse(msg.data);
+                if (data[0] === "EVENT") {
+                    events.push(data[2]);
+                } else if (data[0] === "EOSE") {
+                    clearTimeout(timeout);
+                    socket.close();
+                    resolve(events);
+                }
+            };
+
+            socket.onerror = () => {
+                clearTimeout(timeout);
+                resolve(events);
+            };
+        });
+    },
+
+    renderLeaderboard(scores, profiles) {
+        const list = document.getElementById("leaderboard-list");
+        list.innerHTML = "";
+
+        if (scores.length === 0) {
+            list.innerHTML = "<li>No scores yet. Be the first!</li>";
+            return;
+        }
 
         scores.forEach((s, index) => {
+            const profile = profiles[s.playerPubkey] || { name: "Guest", picture: "assets/logo.png" };
+
+            // If it's a guest (no pubkey or 'guest' pubkey), fallback
+            let displayName = profile.name;
+            if (!s.playerPubkey || s.playerPubkey === "guest") {
+                // Try to parse name from content "PlayerName scored..."
+                const match = s.content.match(/^(.*?) scored/);
+                if (match && match[1]) displayName = match[1];
+            }
+
+            const isGuest = !s.playerPubkey || s.playerPubkey === 'guest';
+            const avatarHtml = `<img src="${profile.picture}" class="lb-avatar" onerror="this.src='assets/logo.png'">`;
+
             const li = document.createElement("li");
             li.innerHTML = `
-                <span class="rank">#${index + 1}</span>
-                <span class="text">${s.content}</span>
+                <div class="lb-left">
+                    <span class="rank">#${index + 1}</span>
+                    ${avatarHtml}
+                    <div class="lb-info">
+                        <span class="lb-name ${isGuest ? 'guest' : ''}">${displayName}</span>
+                        ${!isGuest ? '<span class="lb-verified">✓</span>' : ''}
+                    </div>
+                </div>
                 <span class="score">${s.score}</span>
             `;
             list.appendChild(li);
         });
-
-        if (scores.length === 0) {
-            list.innerHTML = "<li>No scores yet. Be the first!</li>";
-        }
     }
 };
 

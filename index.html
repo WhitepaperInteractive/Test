@@ -15,28 +15,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/pay.css" type="text/css" />
   <link rel="stylesheet" href="assets/css/style.css?v=2" type="text/css" />
-  <link rel="stylesheet" href="assets/css/mining.css?v=2" type="text/css" />
+  <link rel="stylesheet" href="assets/css/mining.css?v=4" type="text/css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   <title>Sat Snake</title>
 </head>
 
 <body>
-  <!-- MAINTENANCE OVERLAY -->
-  <div id="maintenance-mode"
-    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f0f0f; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
-    <div
-      style="background: #1a1a1a; padding: 3rem; border-radius: 12px; border: 1px solid #333; max-width: 90%; width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-      <img src="assets/logo.png" alt="Sat Snake"
-        style="width: 100px; height: 100px; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;">
-      <h1
-        style="font-family: 'Orbitron', sans-serif; color: #fa0; margin-bottom: 1rem; font-size: 2.5rem; text-shadow: 0 0 10px rgba(255, 170, 0, 0.3);">
-        Sat Snake</h1>
-      <div style="height: 2px; width: 60px; background: #fa0; margin: 0 auto 1.5rem auto;"></div>
-      <p style="font-size: 1.25rem; line-height: 1.6; color: #ccc;">Adding the finishes touches - SatSnake will be live
-        soon!</p>
-    </div>
-  </div>
-
   <div id="payment-overlay">
     <div class="bg"></div>
 
@@ -141,7 +125,7 @@
 
         <div class="slider-container">
           <input type="range" id="timeSlider" min="1" max="5" step="1" value="3" class="slider" />
-          <div id="priceLabel" class="price-label">50% Hashpower - 100 sats</div>
+          <div id="priceLabel" class="price-label">15% Hashpower - 100 sats</div>
         </div>
 
         <div class="row">
@@ -271,7 +255,7 @@
     <div id="mining-start">
       <h3>BITCOIN MINER SIMULATION</h3>
       <p>Your computer will now start <span id="mining-duration-text">10 seconds</span> of double SHA-256 Bitcoin
-        mining.</br> You will receive 1 Bitcoin
+        mining.<br> You will receive 1 Bitcoin
         (worth
         10x Points) for each leading zero you find.</p>
       <button id="start-mining-btn" class="button">START MINING</button>
@@ -285,37 +269,39 @@
         <p>DIFFICULTY: <span id="net-difficulty">86.4T</span></p>
         <p>UNIX TIME: <span id="block-time">Loading...</span></p>
         <div class="full-width">
-          <p>PREV HASH: <span id="prev-hash" class="hash-text small">0000000000000000000000...</span></p>
-          <p>MERKLE ROOT: <span id="merkle-root" class="hash-text small">Loading...</span></p>
+          <p>PREV HASH: <span id="prev-hash" class="hash-text">0000000000000000000000...</span></p>
+          <p>MERKLE ROOT: <span id="merkle-root" class="hash-text">Loading...</span></p>
         </div>
       </div>
     </div>
 
     <div id="best-hash-container">
       <h3>CURRENT BEST HASH</h3>
-      <div id="best-hash-display" class="hash-text trigger-pulse">Mininig...</div>
+      <div id="best-hash-display" class="trigger-pulse">Mining...</div>
     </div>
 
-    <div class="mining-console">
-      <div id="hash-stream"></div>
-    </div>
+    <div class="mining-body">
+      <div class="mining-console">
+        <div id="hash-stream"></div>
+      </div>
 
-    <div class="mining-stats">
-      <div class="stat-box">
-        <label>TIME REMAINING</label>
-        <div id="mining-timer">20s</div>
-      </div>
-      <div class="stat-box">
-        <label>HASHRATE</label>
-        <div id="hashrate">0 H/s</div>
-      </div>
-      <div class="stat-box">
-        <label>BEST DIFFICULTY</label>
-        <div id="best-difficulty">0000...</div>
-      </div>
-      <div class="stat-box">
-        <label>BONUS EARNED</label>
-        <div id="bonus-earned">0</div>
+      <div class="mining-sidebar">
+        <div class="stat-box">
+          <label>TIME REMAINING</label>
+          <div id="mining-timer">10s</div>
+        </div>
+        <div class="stat-box">
+          <label>HASHRATE</label>
+          <div id="hashrate">0 H/s</div>
+        </div>
+        <div class="stat-box">
+          <label>BEST DIFFICULTY</label>
+          <div id="best-difficulty">0000...</div>
+        </div>
+        <div class="stat-box">
+          <label>BONUS EARNED</label>
+          <div id="bonus-earned">0</div>
+        </div>
       </div>
     </div>
 
@@ -344,8 +330,9 @@
 
       <div class="action-buttons">
         <button id="btnPlayAgain" class="btn gamestr-btn primary">Play Again (Pay)</button>
+        <button id="btnLeaderboard" class="btn gamestr-btn secondary">Leaderboard</button>
         <button id="btnShareScore" class="btn gamestr-btn secondary">Share</button>
-        <button id="btnSubmitScore" class="btn gamestr-btn accent">Submit to Gamestr</button>
+        <button id="btnSubmitScore" class="btn gamestr-btn accent">Submit</button>
       </div>
     </div>
   </div>
@@ -369,7 +356,7 @@
     <div class="popup-card wide">
       <div class="header-row">
         <h2>GAMESTR LEADERBOARD</h2>
-        <button id="btnLeaderboardMenu" class="btn small ghost gamestr-btn">Main Menu</button>
+        <button id="btnLeaderboardMenu" class="btn small ghost gamestr-btn">Back</button>
       </div>
 
       <div class="leaderboard-container">

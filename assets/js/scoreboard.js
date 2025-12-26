@@ -15,7 +15,10 @@ let scoreBoard = {
     }
   },
   getCurrentHighScore() {
-    this.currentHighScore = parseInt(localStorage.getItem("highScore"));
+    // Priority: window.stats.highScore (Global) > localStorage (Local)
+    // Actually, stats.highScore is initialized from localStorage but updated by Gamestr
+    // So we just use stats.highScore
+    this.currentHighScore = window.stats.highScore;
     if (this.currentHighScore >= 100) {
       this.hasHitMilestone = true;
     } else {
@@ -80,8 +83,7 @@ let scoreBoard = {
     }
     if (isNewHighScore()) {
       content(
-        `Signs of improvement. You beat your previous high score by ${
-          this.currentScore - this.currentHighScore
+        `Signs of improvement. You beat your previous high score by ${this.currentScore - this.currentHighScore
         }. `,
         true
       );
@@ -216,8 +218,7 @@ let scoreBoard = {
       stats.gameTimeInSeconds > 300
     ) {
       content(
-        `${convertSecondsToHms(stats.gameTimeInSeconds)} to add a measly ${
-          this.currentScore - this.currentHighScore
+        `${convertSecondsToHms(stats.gameTimeInSeconds)} to add a measly ${this.currentScore - this.currentHighScore
         } to your PB. Yikes. `,
         true
       );

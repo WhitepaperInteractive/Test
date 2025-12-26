@@ -203,7 +203,7 @@
             // miningPower is the percentage (10, 25, 50, 75, 100)
             const maxRate = 85; // approx 85kH/s is 100% on this engine
 
-            hashrateDisplay.textContent = `${displayRate} (${miningPower}% of ${maxRate}kH/s)`;
+            hashrateDisplay.textContent = `${displayRate} (${miningPower}% hashpower)`;
             hashesComputed = 0;
         }, 500);
 
