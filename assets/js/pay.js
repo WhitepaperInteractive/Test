@@ -113,6 +113,18 @@ function clearNWCUrl() {
     localStorage.removeItem("nwc_url");
 }
 
+function saveWebLNState(enabled) {
+    if (enabled) {
+        localStorage.setItem("webln_enabled", "true");
+    } else {
+        localStorage.removeItem("webln_enabled");
+    }
+}
+
+function getWebLNState() {
+    return localStorage.getItem("webln_enabled") === "true";
+}
+
 // --------------------
 // LNBits helpers
 // --------------------
@@ -216,6 +228,7 @@ function showWebLNDisconnected() {
     $("weblnNotConnected").classList.remove("hidden");
     $("weblnConnected").classList.add("hidden");
     state.weblnEnabled = false;
+    saveWebLNState(false);
 }
 
 async function connectWebLN() {
@@ -227,6 +240,7 @@ async function connectWebLN() {
     try {
         await window.webln.enable();
         state.weblnEnabled = true;
+        saveWebLNState(true);
         showWebLNConnected();
         return true;
     } catch (err) {
@@ -462,6 +476,21 @@ async function restorePersistedState() {
     if (savedNWCUrl) {
         $("nwcInput").value = savedNWCUrl;
         await connectNWC(savedNWCUrl);
+    }
+
+    // Restore WebLN connection
+    if (getWebLNState()) {
+        if (window.webln) {
+            try {
+                await window.webln.enable();
+                state.weblnEnabled = true;
+                showWebLNConnected();
+            } catch (err) {
+                console.error("Failed to auto-connect WebLN:", err);
+                // If failed, clear the persisted state
+                saveWebLNState(false);
+            }
+        }
     }
 }
 

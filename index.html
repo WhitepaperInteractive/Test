@@ -21,7 +21,7 @@
 </head>
 
 <body>
-  <div id="payment-overlay">
+  <div id="payment-overlay" data-hide-on-state="PLAY READY">
     <div class="bg"></div>
 
     <header class="shell header">
@@ -368,7 +368,7 @@
   </div>
 
   <!-- Game container -->
-  <div id="game-container" class="avoid-clicks hidden">
+  <div id="game-container" class="avoid-clicks hidden" data-show-on-state="PLAY READY">
 
     <!-- Start Game Popup -->
     <div id="game-start-popup" class="game-start-overlay">
@@ -384,17 +384,17 @@
 
     <!--  Headings -->
     <div id="instructions-heading" class="menu-heading-container hidden" data-show-on-state=""
-      data-hide-on-state="PLAY PAUSE OPTIONS GAMEOVER MAIN">
+      data-hide-on-state="PLAY PAUSE OPTIONS GAMEOVER MAIN READY">
       <h1>Sat Snake</h1>
     </div>
     <div id="scores-heading" class="menu-heading-container hidden" data-show-on-state="GAMEOVER"
-      data-hide-on-state="PLAY PAUSE OPTIONS MAIN">
+      data-hide-on-state="PLAY PAUSE OPTIONS MAIN READY">
       <h1>Score Board</h1>
     </div>
 
     <!-- Instructions -->
     <div id="instructions-container" class="menu-content-container hidden" data-show-on-state=""
-      data-hide-on-state="PLAY PAUSE OPTIONS GAMEOVER MAIN">
+      data-hide-on-state="PLAY PAUSE OPTIONS GAMEOVER MAIN READY">
       <p>
         Use the <span class="desktop-controls-text">ARROW keys</span> or
         <span class="mobile-controls-text">SWIPE</span> anywhere to change
@@ -413,7 +413,7 @@
 
     <!-- Scores -->
     <div id="scores-container" class="menu-content-container hidden" data-show-on-state="GAMEOVER"
-      data-hide-on-state="PLAY PAUSE OPTIONS MAIN">
+      data-hide-on-state="PLAY PAUSE OPTIONS MAIN READY">
       <p id="scores-award-text">
         You haven't achieved anything yet. Once you do, your top 5 scores of
         the session will be displayed here.
@@ -425,7 +425,7 @@
 
     <!-- Options -->
     <div id="options-container" class="menu-content-container hidden" data-show-on-state="OPTIONS PAUSE"
-      data-hide-on-state="PLAY MAIN GAMEOVER">
+      data-hide-on-state="PLAY MAIN GAMEOVER READY">
       <div id="checkbox-container">
         <label class="options-choice-button" for="audio-checkbox">
           <input id="audio-checkbox" type="checkbox" checked />
@@ -437,22 +437,23 @@
     <!-- Menu buttons -->
     <div id="menu-buttons-container">
       <button id="play-button" class="button" data-show-on-state="MAIN OPTIONS GAMEOVER"
-        data-hide-on-state="PLAY PAUSE">
+        data-hide-on-state="PLAY PAUSE READY">
         Play
       </button>
       <button id="resume-button" class="button hidden" data-show-on-state="PAUSE"
-        data-hide-on-state="PLAY MAIN OPTIONS GAMEOVER">
+        data-hide-on-state="PLAY MAIN OPTIONS GAMEOVER READY">
         Resume
       </button>
-      <button id="scores-button" class="button" data-show-on-state="MAIN" data-hide-on-state="PLAY PAUSE GAMEOVER">
+      <button id="scores-button" class="button" data-show-on-state="MAIN"
+        data-hide-on-state="PLAY PAUSE GAMEOVER READY">
         Scores
       </button>
     </div>
   </div>
 
   <!-- Canvas -->
-  <canvas id="canvas" class="hidden paused-effect" data-show-on-state="PLAY"
-    data-blur-on-state="PAUSE MAIN OPTIONS GAMEOVER" data-unblur-on-state="PLAY"></canvas>
+  <canvas id="canvas" class="hidden paused-effect" data-show-on-state="PLAY READY"
+    data-blur-on-state="PAUSE MAIN OPTIONS GAMEOVER READY" data-unblur-on-state="PLAY"></canvas>
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>

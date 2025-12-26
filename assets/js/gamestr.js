@@ -176,7 +176,7 @@ const GAMESTR = {
 
     openShareModal() {
         // Pre-fill text
-        const text = `I just scored ${this.currentScore} on SatSnake 🐍\n\nPlay now at SatSnake.WhitepaperInteractive.com\n\n#SatSnake #Gamestr`;
+        const text = `🐍 I just scored ${this.currentScore} points on SatSnake! Can you do better?\n\nPlay now: https://www.SatSnake@WhitepaperInteractive.com\n\n#SatSnake #Gamestr`;
         document.getElementById("shareText").value = text;
 
         // Determine logged-in state
