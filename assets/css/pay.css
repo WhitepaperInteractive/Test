@@ -1,0 +1,535 @@
+:root {
+    --bg: #0b0f14;
+    --card: rgba(16, 22, 30, 0.72);
+    --stroke: rgba(255, 255, 255, 0.08);
+    --text: rgba(255, 255, 255, 0.92);
+    --muted: rgba(255, 255, 255, 0.62);
+    --btc: #f7931a;
+    --btc2: #ffb347;
+    --good: #2bd576;
+    --warn: #ff5c5c;
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    --radius: 18px;
+}
+
+/* Scoped to payment overlay to avoid conflicts */
+#payment-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    /* Above Mining Overlay (100) */
+    overflow-y: auto;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+    color: var(--text);
+    text-align: left;
+    /* Reset alignment from game CSS */
+
+    /* Reset font size to avoid inheritance from game's dynamic body scaling */
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Reuse existing styles but scope or just assume no conflict since overlay is top level */
+/* Copying most styles but ensuring they work within the overlay context */
+
+#payment-overlay * {
+    box-sizing: border-box;
+}
+
+#payment-overlay textarea,
+#payment-overlay #invoiceText,
+#payment-overlay #paymentHash,
+#payment-overlay .mono {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+#payment-overlay .bg {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(900px 600px at 20% 15%, rgba(247, 147, 26, 0.22), transparent 55%),
+        radial-gradient(900px 700px at 75% 25%, rgba(255, 179, 71, 0.12), transparent 60%),
+        radial-gradient(900px 800px at 55% 80%, rgba(247, 147, 26, 0.10), transparent 65%),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04), transparent 30%);
+    pointer-events: none;
+    filter: saturate(1.05);
+}
+
+#payment-overlay .shell {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+}
+
+#payment-overlay .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 26px 0 14px;
+}
+
+#payment-overlay .brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+#payment-overlay .logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+#payment-overlay .brandTitle {
+    font-weight: 800;
+    letter-spacing: 0.2px;
+}
+
+#payment-overlay .brandSub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+/* User Profile Styles (top right) */
+#payment-overlay .userProfile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px 6px 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--stroke);
+    border-radius: 999px;
+}
+
+#payment-overlay .userProfile.hidden {
+    display: none;
+}
+
+#payment-overlay .profilePic {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--btc);
+}
+
+#payment-overlay .profilePic[src=""],
+#payment-overlay .profilePic:not([src]) {
+    display: none;
+}
+
+#payment-overlay .profileName {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#payment-overlay .userProfile .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+#payment-overlay .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 16px;
+    padding-bottom: 22px;
+}
+
+#payment-overlay .card {
+    background: var(--card);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 18px 16px;
+    backdrop-filter: blur(10px);
+}
+
+#payment-overlay .card h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #fff;
+}
+
+#payment-overlay .muted {
+    color: var(--muted);
+}
+
+#payment-overlay .tiny {
+    font-size: 12px;
+}
+
+#payment-overlay .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+#payment-overlay .warn {
+    color: rgba(255, 92, 92, 0.9);
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+#payment-overlay .row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+#payment-overlay .divider {
+    height: 1px;
+    background: var(--stroke);
+    margin: 14px 0;
+}
+
+#payment-overlay .label {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 8px 0 6px;
+}
+
+#payment-overlay .input,
+#payment-overlay .textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: var(--text);
+    outline: none;
+}
+
+#payment-overlay .input:focus,
+#payment-overlay .textarea:focus {
+    border-color: rgba(247, 147, 26, 0.55);
+    box-shadow: 0 0 0 3px rgba(247, 147, 26, 0.12);
+}
+
+#payment-overlay .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#payment-overlay .input-wrapper .input {
+    padding-right: 44px;
+}
+
+#payment-overlay .eye-toggle {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#payment-overlay .eye-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--muted);
+}
+
+#payment-overlay .eye-icon.hidden {
+    display: none;
+}
+
+#payment-overlay .btn {
+    appearance: none;
+    border: 1px solid rgba(247, 147, 26, 0.55);
+    background: linear-gradient(180deg, rgba(247, 147, 26, 0.25), rgba(247, 147, 26, 0.12));
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#payment-overlay .btn:hover {
+    border-color: rgba(247, 147, 26, 0.8);
+}
+
+#payment-overlay .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+#payment-overlay .btn.ghost {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+#payment-overlay .btn.small {
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+#payment-overlay .hidden {
+    display: none;
+}
+
+#payment-overlay .tabs {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+#payment-overlay .tab {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 650;
+    font-size: 13px;
+}
+
+#payment-overlay .tab.active {
+    border-color: rgba(247, 147, 26, 0.7);
+    background: rgba(247, 147, 26, 0.10);
+}
+
+#payment-overlay .tabPanel {
+    display: none;
+    margin-top: 10px;
+}
+
+#payment-overlay .tabPanel.active {
+    display: block;
+}
+
+#payment-overlay .payTabPanel {
+    display: none;
+    margin-top: 10px;
+}
+
+#payment-overlay .payTabPanel.active {
+    display: block;
+}
+
+#payment-overlay .payGrid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+#payment-overlay .qrBox {
+    width: 240px;
+    height: 240px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.28);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+}
+
+#payment-overlay .qr-container {
+    width: 220px;
+    height: 220px;
+    /* Match qrBox styles */
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.28);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+}
+
+#payment-overlay .qrBox img,
+#payment-overlay .qrBox canvas,
+#payment-overlay .qr-container canvas {
+    width: 220px !important;
+    height: 220px !important;
+}
+
+/* Loading Indicator Styles */
+#payment-overlay .loadingIndicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+#payment-overlay .loadingIndicator.hidden {
+    display: none;
+}
+
+#payment-overlay .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--btc);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#payment-overlay .paidBanner {
+    border: 1px solid rgba(43, 213, 118, 0.35);
+    background: rgba(43, 213, 118, 0.08);
+    padding: 12px 12px;
+    border-radius: 14px;
+}
+
+#payment-overlay .paidTitle {
+    font-weight: 800;
+    color: rgba(43, 213, 118, 0.95);
+}
+
+/* NWC Connected Banner */
+#payment-overlay .nwcConnectedBanner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(247, 147, 26, 0.12);
+    border: 1px solid rgba(247, 147, 26, 0.4);
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+#payment-overlay .nwcConnectedIcon {
+    font-size: 18px;
+}
+
+#payment-overlay .nwcConnectedText {
+    font-weight: 600;
+    color: var(--btc2);
+    font-size: 14px;
+}
+
+#payment-overlay .details summary {
+    cursor: pointer;
+    color: var(--muted);
+}
+
+#payment-overlay .details>div {
+    margin-top: 10px;
+    white-space: pre-wrap;
+}
+
+#payment-overlay .list {
+    margin: 10px 0 0;
+    color: var(--muted);
+}
+
+#payment-overlay .list li {
+    margin: 6px 0;
+}
+
+#payment-overlay .span2 {
+    grid-column: 1 / -1;
+}
+
+#payment-overlay .footer {
+    padding: 10px 0 26px;
+}
+
+@media (max-width: 980px) {
+    #payment-overlay .grid {
+        grid-template-columns: 1fr;
+    }
+
+    #payment-overlay .payGrid {
+        grid-template-columns: 1fr;
+    }
+
+    #payment-overlay .qrBox {
+        width: 100%;
+        max-width: 240px;
+        height: auto;
+        padding: 14px;
+        margin: 0 auto;
+    }
+
+    #payment-overlay .qrBox img,
+    #payment-overlay .qrBox canvas {
+        width: 100% !important;
+        max-width: 220px !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #payment-overlay .shell {
+        width: calc(100% - 16px);
+    }
+
+    #payment-overlay .card {
+        padding: 14px;
+    }
+}
+
+/* Slider Styles */
+#payment-overlay .slider-container {
+    margin: 20px 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#payment-overlay .slider {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+#payment-overlay .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--btc);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(247, 147, 26, 0.5);
+}
+
+#payment-overlay .slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--btc);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(247, 147, 26, 0.5);
+}
+
+#payment-overlay .price-label {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--btc);
+    text-align: center;
+    text-shadow: 0 0 10px rgba(247, 147, 26, 0.3);
+}
