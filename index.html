@@ -7,11 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="viewport" content="user-scalable=yes, width=device-width, initial-scale=1.0" />
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-icon-180x180.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/android-icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/web-app-manifest-192x192.png" />
   <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon/favicon-96x96.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="assets/favicon/favicon.ico" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/pay.css" type="text/css" />
   <link rel="stylesheet" href="assets/css/style.css?v=2" type="text/css" />
@@ -328,10 +328,42 @@
         <div id="goProfileName" class="profile-name-large">Player</div>
       </div>
 
+      <!-- GAME OVER LOGIN OPTIONS (Only shown if guest) -->
+      <div id="goLoginSection" class="hidden">
+        <div class="divider"></div>
+        <p class="muted tiny">Login to save your high score & share</p>
+
+        <div class="tabs small-tabs">
+          <button class="tab active" data-gotab="ext">Extension</button>
+          <button class="tab" data-gotab="nsec">Nsec</button>
+          <button class="tab" data-gotab="bunker">Bunker</button>
+        </div>
+
+        <!-- Extension -->
+        <div class="tabPanel active" id="gotab-ext">
+          <button class="btn small full-width" id="btnGoNip07">Connect Extension</button>
+        </div>
+
+        <!-- Nsec -->
+        <div class="tabPanel" id="gotab-nsec">
+          <div class="input-wrapper">
+            <input class="input small" id="goNsecInput" type="password" placeholder="nsec1..." autocomplete="off" />
+          </div>
+          <button class="btn small full-width" id="btnGoNsec">Login</button>
+        </div>
+
+        <!-- Bunker -->
+        <div class="tabPanel" id="gotab-bunker">
+          <input class="input small" id="goBunkerInput" placeholder="bunker://..." autocomplete="off" />
+          <button class="btn small full-width" id="btnGoBunker">Connect</button>
+        </div>
+        <div class="divider"></div>
+      </div>
+
       <div class="action-buttons">
-        <button id="btnPlayAgain" class="btn gamestr-btn primary">Main Menu</button>
-        <button id="btnLeaderboard" class="btn gamestr-btn secondary">Gamestr Leaderboard</button>
-        <button id="btnShareScore" class="btn gamestr-btn secondary">Share on NOSTR</button>
+        <button id="btnPlayAgain" class="btn gamestr-btn secondary">Main Menu</button>
+        <button id="btnLeaderboard" class="btn gamestr-btn yellow">Gamestr Leaderboard</button>
+        <button id="btnShareScore" class="btn gamestr-btn primary">Share on NOSTR</button>
         <button id="btnSubmitScore" class="btn gamestr-btn accent">Submit score to Gamestr</button>
       </div>
     </div>

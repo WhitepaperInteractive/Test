@@ -36,8 +36,95 @@ const GAMESTR = {
         const btnCancelShare = document.getElementById("btnCancelShare");
         if (btnCancelShare) btnCancelShare.onclick = () => this.closeShareModal();
 
+        // Game Over Login Wiring
+        this.wireGoLogin();
+
         // Fetch global high score on init
         this.fetchGlobalHighScore();
+    },
+
+    wireGoLogin() {
+        // Tab Switching
+        document.querySelectorAll(".tab[data-gotab]").forEach((tab) => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".tab[data-gotab]").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".tabPanel[id^='gotab-']").forEach(p => p.classList.remove("active")); // Be specific
+
+                tab.classList.add("active");
+                const targetId = "gotab-" + tab.dataset.gotab;
+                const panel = document.getElementById(targetId);
+                if (panel) panel.classList.add("active");
+            });
+        });
+
+        // Extension Login
+        const btnGoNip07 = document.getElementById("btnGoNip07");
+        if (btnGoNip07) btnGoNip07.onclick = async () => {
+            if (!window.nostr) return alert("Nostr extension not detected");
+            try {
+                const pubkey = await window.nostr.getPublicKey();
+                if (window.PAY && window.PAY.loadNostrProfile) {
+                    window.PAY.loadNostrProfile(pubkey);
+                }
+                this.loadProfile(); // Refresh UI
+            } catch (err) {
+                alert("Failed to connect: " + err.message);
+            }
+        };
+
+        // NSEC Login
+        const btnGoNsec = document.getElementById("btnGoNsec");
+        if (btnGoNsec) btnGoNsec.onclick = async () => {
+            const nsec = document.getElementById("goNsecInput").value.trim();
+            if (!nsec || !nsec.startsWith("nsec")) {
+                alert("Please enter a valid NSEC key");
+                return;
+            }
+
+            try {
+                // Dynamic import same as pay.js
+                const { decode } = await import("https://esm.sh/nostr-tools@2.7.0/nip19");
+                const { getPublicKey } = await import("https://esm.sh/nostr-tools@2.7.0/pure");
+                const { bytesToHex } = await import("https://esm.sh/@noble/hashes@1.3.3/utils");
+
+                const decoded = decode(nsec);
+                if (decoded.type !== "nsec") throw new Error("Invalid nsec");
+
+                const privateKeyBytes = decoded.data;
+                const pubkeyBytes = getPublicKey(privateKeyBytes);
+                const pubkeyHex = typeof pubkeyBytes === 'string' ? pubkeyBytes : bytesToHex(pubkeyBytes);
+                const privKeyHex = bytesToHex(privateKeyBytes);
+
+                if (window.PAY && window.PAY.loadNostrProfile) {
+                    window.PAY.loadNostrProfile(pubkeyHex);
+                    localStorage.setItem("nostr_privkey", privKeyHex); // Also save privkey like pay.js
+                }
+                this.loadProfile(); // Refresh UI
+            } catch (err) {
+                alert("Invalid NSEC key: " + err.message);
+            }
+        };
+
+        // Bunker Login
+        const btnGoBunker = document.getElementById("btnGoBunker");
+        if (btnGoBunker) btnGoBunker.onclick = async () => {
+            const url = document.getElementById("goBunkerInput").value.trim();
+            if (!url.startsWith("bunker://")) {
+                alert("Invalid Bunker URL");
+                return;
+            }
+
+            const match = url.match(/^bunker:\/\/([^?]+)/);
+            if (match) {
+                const pubkey = match[1];
+                if (window.PAY && window.PAY.loadNostrProfile) {
+                    window.PAY.loadNostrProfile(pubkey);
+                }
+                this.loadProfile();
+            } else {
+                alert("Could not parse pubkey from Bunker URL");
+            }
+        };
     },
 
     fetchGlobalHighScore() {
@@ -64,7 +151,7 @@ const GAMESTR = {
                 const gameMatch = gameTag && gameTag[1].toLowerCase() === "satsnake";
 
                 // Filter for t="test" tag as specified in requirements
-                const hasTestTag = event.tags.some(t => t[0] === "t" && t[1] === "test");
+                const hasTestTag = event.tags.some(t => t[0] === "t" && t[1] === "casual");
 
                 if (gameMatch && hasTestTag) {
                     const scoreTag = event.tags.find(t => t[0] === "score");
@@ -112,8 +199,17 @@ const GAMESTR = {
         // 3. Update Score UI
         document.getElementById("finalScore").textContent = score;
 
-        // 4. Handle Profile
-        this.loadProfile();
+        // 4. Handle Profile & Login Visibility
+        const savedPubkey = localStorage.getItem("nostr_pubkey");
+        const loginSection = document.getElementById("goLoginSection");
+
+        if (savedPubkey) {
+            if (loginSection) loginSection.classList.add("hidden");
+            this.loadProfile();
+        } else {
+            if (loginSection) loginSection.classList.remove("hidden");
+            this.generateRandomProfile();
+        }
     },
 
     loadProfile() {
@@ -123,6 +219,16 @@ const GAMESTR = {
         if (savedPubkey) {
             // Logged in
             this.fetchProfile(savedPubkey);
+            // Hide login section if it was visible
+            const loginSection = document.getElementById("goLoginSection");
+            if (loginSection) loginSection.classList.add("hidden");
+
+            // Enable share button styling
+            const btnShareNostr = document.getElementById("btnShareScore"); // The main one on GO screen
+            if (btnShareNostr) {
+                // Actually btnShareScore is "Share on NOSTR"
+                // Check logic in render
+            }
         } else {
             // Guest - Generate Random
             this.generateRandomProfile();
@@ -130,15 +236,30 @@ const GAMESTR = {
     },
 
     async fetchProfile(pubkey) {
-        // Simple fetch from relay or use existing UI data if pay.js already loaded it
-        // We can check the DOM elements populated by pay.js
-        const existingName = document.getElementById("nostrProfileName").textContent;
-        const existingPic = document.getElementById("nostrProfilePic").src;
+        // First try to use existing UI data from header
+        let name = document.getElementById("nostrProfileName").textContent;
+        let pic = document.getElementById("nostrProfilePic").src;
+
+        // If name looks like a pubkey (long string, no spaces) or empty, try to fetch it ourselves
+        // The header update in pay.js might be slow or pending
+        if (!name || name.length > 20 || name.includes("...")) {
+            console.log("Fetching profile for Game Over screen...");
+            try {
+                const events = await this.fetchKind0([pubkey]);
+                if (events.length > 0) {
+                    const content = JSON.parse(events[0].content);
+                    name = content.name || content.display_name || content.nip05 || name;
+                    pic = content.picture || pic;
+                }
+            } catch (e) {
+                console.error("Error fetching profile:", e);
+            }
+        }
 
         this.playerProfile = {
-            name: existingName || "Nostr Player",
+            name: name || "Nostr Player",
             pubkey: pubkey,
-            picture: existingPic
+            picture: pic
         };
 
         this.updateProfileUI(this.playerProfile);
@@ -442,13 +563,15 @@ const GAMESTR = {
             })
             .map(e => {
                 const scoreTag = e.tags.find(t => t[0] === "score");
-                // Check if player tag exists, otherwise use pubkey from event (which might be the worker's?)
-                // Actually, the worker signs it, but checks for 'p' tag for original player if valid?
-                // The prompt says "playerPubkey" is passed to worker. 
-                // Let's assume the worker adds a "p" tag for the player, OR we use the content if provided.
-                // Standard Gamestr: event.pubkey is the signer (Worker). Player is in 'p' tag or tags.
 
-                // Let's look for 'p' tag.
+                // Try to parse player name from content "PlayerName scored..."
+                let contentName = null;
+                const match = e.content.match(/^(.*?) scored/);
+                if (match && match[1]) {
+                    contentName = match[1];
+                }
+
+                // Check for 'p' tag
                 const pTag = e.tags.find(t => t[0] === "p");
                 const playerPubkey = pTag ? pTag[1] : null;
 
@@ -456,7 +579,8 @@ const GAMESTR = {
                     id: e.id,
                     content: e.content,
                     score: scoreTag ? parseInt(scoreTag[1]) : 0,
-                    playerPubkey: playerPubkey
+                    playerPubkey: playerPubkey,
+                    contentName: contentName // Store extracted name
                 };
             })
             .sort((a, b) => b.score - a.score);
@@ -540,8 +664,15 @@ const GAMESTR = {
 
             // If it's a guest (no pubkey or 'guest' pubkey), fallback
             let displayName = profile.name;
-            if (!s.playerPubkey || s.playerPubkey === "guest") {
-                // Try to parse name from content "PlayerName scored..."
+
+            // If we have a scraped name from content, use it if we don't have a good profile name
+            // OR if the profile name is generic/unknown/Guest and we have a specific content name
+            if (s.contentName && (displayName === "Guest" || displayName === "Unknown" || !s.playerPubkey || s.playerPubkey === 'guest')) {
+                displayName = s.contentName;
+            }
+            // Logic for guest fallback if regex failed
+            else if (!s.playerPubkey || s.playerPubkey === "guest") {
+                // Try to parse name from content "PlayerName scored..." (Already done in enrichment, but fallback)
                 const match = s.content.match(/^(.*?) scored/);
                 if (match && match[1]) displayName = match[1];
             }
@@ -556,7 +687,7 @@ const GAMESTR = {
                     ${avatarHtml}
                     <div class="lb-info">
                         <span class="lb-name ${isGuest ? 'guest' : ''}">${displayName}</span>
-                        ${!isGuest ? '<span class="lb-verified">✓</span>' : ''}
+
                     </div>
                 </div>
                 <span class="score">${s.score}</span>

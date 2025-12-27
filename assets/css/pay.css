@@ -159,25 +159,25 @@
     color: #fff;
 }
 
-#payment-overlay .muted {
+.muted {
     color: var(--muted);
 }
 
-#payment-overlay .tiny {
+.tiny {
     font-size: 12px;
 }
 
-#payment-overlay .mono {
+.mono {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-#payment-overlay .warn {
+.warn {
     color: rgba(255, 92, 92, 0.9);
     font-size: 12px;
     margin-top: 10px;
 }
 
-#payment-overlay .row {
+.row {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -185,20 +185,20 @@
     flex-wrap: wrap;
 }
 
-#payment-overlay .divider {
+.divider {
     height: 1px;
     background: var(--stroke);
     margin: 14px 0;
 }
 
-#payment-overlay .label {
+.label {
     font-size: 12px;
     color: var(--muted);
     margin: 8px 0 6px;
 }
 
-#payment-overlay .input,
-#payment-overlay .textarea {
+.input,
+.textarea {
     width: 100%;
     background: rgba(0, 0, 0, 0.28);
     border: 1px solid rgba(255, 255, 255, 0.10);
@@ -208,23 +208,23 @@
     outline: none;
 }
 
-#payment-overlay .input:focus,
-#payment-overlay .textarea:focus {
+.input:focus,
+.textarea:focus {
     border-color: rgba(247, 147, 26, 0.55);
     box-shadow: 0 0 0 3px rgba(247, 147, 26, 0.12);
 }
 
-#payment-overlay .input-wrapper {
+.input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-#payment-overlay .input-wrapper .input {
+.input-wrapper .input {
     padding-right: 44px;
 }
 
-#payment-overlay .eye-toggle {
+.eye-toggle {
     position: absolute;
     right: 10px;
     background: none;
@@ -236,17 +236,17 @@
     justify-content: center;
 }
 
-#payment-overlay .eye-icon {
+.eye-icon {
     width: 20px;
     height: 20px;
     color: var(--muted);
 }
 
-#payment-overlay .eye-icon.hidden {
+.eye-icon.hidden {
     display: none;
 }
 
-#payment-overlay .btn {
+.btn {
     appearance: none;
     border: 1px solid rgba(247, 147, 26, 0.55);
     background: linear-gradient(180deg, rgba(247, 147, 26, 0.25), rgba(247, 147, 26, 0.12));
@@ -262,38 +262,38 @@
     gap: 8px;
 }
 
-#payment-overlay .btn:hover {
+.btn:hover {
     border-color: rgba(247, 147, 26, 0.8);
 }
 
-#payment-overlay .btn:disabled {
+.btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
 }
 
-#payment-overlay .btn.ghost {
+.btn.ghost {
     border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.03);
 }
 
-#payment-overlay .btn.small {
+.btn.small {
     padding: 8px 10px;
     border-radius: 12px;
     font-size: 13px;
 }
 
-#payment-overlay .hidden {
+.hidden {
     display: none;
 }
 
-#payment-overlay .tabs {
+.tabs {
     display: flex;
     gap: 10px;
     margin-top: 10px;
     flex-wrap: wrap;
 }
 
-#payment-overlay .tab {
+.tab {
     border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.03);
     color: var(--text);
@@ -304,26 +304,26 @@
     font-size: 13px;
 }
 
-#payment-overlay .tab.active {
+.tab.active {
     border-color: rgba(247, 147, 26, 0.7);
     background: rgba(247, 147, 26, 0.10);
 }
 
-#payment-overlay .tabPanel {
+.tabPanel {
     display: none;
     margin-top: 10px;
 }
 
-#payment-overlay .tabPanel.active {
+.tabPanel.active {
     display: block;
 }
 
-#payment-overlay .payTabPanel {
+.payTabPanel {
     display: none;
     margin-top: 10px;
 }
 
-#payment-overlay .payTabPanel.active {
+.payTabPanel.active {
     display: block;
 }
 

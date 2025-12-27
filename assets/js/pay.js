@@ -310,13 +310,16 @@ async function createInvoice() {
         state.amount = 100;
     }
 
+    // Capture amount locally to prevent race conditions if slider moves during fetch
+    const amountToPay = state.amount;
+
     try {
         const res = await fetch(
             http(`/api/v1/paywalls/invoice/${CONFIG.paywallId}`),
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount: state.amount })
+                body: JSON.stringify({ amount: amountToPay })
             }
         );
         if (!res.ok) {
@@ -325,6 +328,8 @@ async function createInvoice() {
         }
 
         const data = await res.json();
+
+        // Only update state if this invoice matches the amount we intended (optional safety, but local var is key)
         state.bolt11 = data.payment_request;
         state.paymentHash = data.payment_hash;
 
@@ -335,10 +340,10 @@ async function createInvoice() {
         // QR - Use lowercase for maximum wallet compatibility
         qrContainer.innerHTML = "";
 
-        // Update "Pay X Sats" text in the new location
+        // Update "Pay X Sats" text in the new location using the CAPTURED amount
         const amountDisplay = $("invoiceAmountDisplay");
         if (amountDisplay) {
-            amountDisplay.textContent = `Pay ${state.amount} Sats`;
+            amountDisplay.textContent = `Pay ${amountToPay} Sats`;
         }
 
 
@@ -721,6 +726,21 @@ function wire() {
     // Create invoice on load if not already paid
     if (!hasAccess()) createInvoice();
 }
+
+// --------------------
+// EXPORTS FOR OTHER MODULES
+// --------------------
+window.PAY = {
+    loadNostrProfile,
+    saveNostrLogin,
+    saveNWCUrl,
+    connectNWC,
+    connectWebLN,
+    getNostrLogin: getNostrLogin,
+    getNWCUrl: getNWCUrl,
+    getWebLNState: getWebLNState,
+    state
+};
 
 // --------------------
 // DETECT RELOAD AND CLEAR SESSION

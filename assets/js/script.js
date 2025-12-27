@@ -723,11 +723,12 @@ let game = {
     scoreBoard.previousScore = scoreBoard.currentScore;
     scoreBoard.currentScore = 0;
     gameBoard.tileToSparkDRatio = initialTileToSparkDRatio;
+    this.lastMove = left; // Initialize to prevent immediate death if pressing right
   },
   checkSettings() {
     this.wallsEnabled = true;
     this.audio = audioCheckBox.checked;
-    this.speed = fast;
+    this.speed = medium;
   },
   startLogic() {
     this.refreshInterval = setInterval(() => {

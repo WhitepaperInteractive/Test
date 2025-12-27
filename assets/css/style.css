@@ -580,6 +580,24 @@ h1 {
   color: rgba(255, 255, 255, 0.8);
 }
 
+.gamestr-btn.yellow {
+  background-color: #ffd700;
+  color: #000;
+  font-weight: bold;
+}
+
+.gamestr-btn.yellow:hover {
+  background-color: #ffea00;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.score-display .label {
+  color: #ccc;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
 /* Leaderboard Specifics */
 .header-row {
   display: flex;
